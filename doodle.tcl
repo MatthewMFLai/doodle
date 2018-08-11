@@ -76,6 +76,13 @@ proc page_get {p_pages page} {
 	return $pages($page)
 }
 
+proc page_set_serial {p_pages data} {
+    upvar $p_pages pages
+	
+    array set pages $data
+	return
+}
+
 proc page_set {p_pages page datalist} {
     upvar $p_pages pages
 	
@@ -162,6 +169,12 @@ proc doodle {x y handle} {
    $w create text $x $y -text \> -tag nextpage
    $w bind nextpage <1> {doodle'update'page %W next; doodle'tx V-Page next 0}
    incr x 10
+   $w create text $x $y -text L -tag load
+   $w bind load <1> {doodle'load %W}
+   incr x 10
+   $w create text $x $y -text S -tag save
+   $w bind save <1> {doodle'save %W}
+   incr x 10
    $w create text $x $y -text Q -tag quit
    $w bind quit <1> {exit 0}
  }
@@ -240,6 +253,10 @@ proc doodle {x y handle} {
      set page_cur [page_current g_pages_db]
 	 doodle'save'page $w $page_cur
 
+	 if {$direction == "curr"} {
+	     return
+     }
+
 	 undo_init g_id_list
 	 $w delete line
 
@@ -252,6 +269,44 @@ proc doodle {x y handle} {
      set page_cur [page_current g_pages_db]
      doodle'load'page $w $page_cur	 
      return
+ }
+ 
+ proc doodle'load {w} {
+     global g_pages_db
+     global g_id_list
+
+     set filename [tk_getOpenFile]
+     if {$filename == ""} {
+	     return
+	 }
+
+     set fd [open $filename r]
+	 set data [read $fd]
+	 close $fd
+
+	 undo_init g_id_list
+	 $w delete line
+	 page_init g_pages_db
+	 page_set_serial g_pages_db $data
+	 set page_cur [page_current g_pages_db]
+	 doodle'load'page $w $page_cur
+	 
+     return	 
+ }
+ 
+ proc doodle'save {w} {
+     global g_pages_db
+
+     doodle'update'page $w curr
+	 set data [page_get_serial g_pages_db]
+     set filename [tk_getSaveFile]
+     if {$filename == ""} {
+	     return
+	 }
+     set fd [open $filename w]
+     puts $fd $data
+     close $fd
+     return	 
  }
  
  proc doodle'tx {v_event x y} {
