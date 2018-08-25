@@ -128,6 +128,7 @@ proc doodle {x y handle} {
    
    set w  .canvas
    if ![winfo exists $w] {
+      wm withdraw .
       toplevel    $w
       wm geometry $w $x\x$y
       wm title    $w Canvas

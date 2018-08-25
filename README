@@ -1,0 +1,7 @@
+Two ways to launch doodle client:
+
+(1) double click on "start_doodle.bat", or
+
+(2) - launch a cmd terminal in DOODLE_HOME folder
+    - >doodle_config.bat
+	- >wish doodle_main.tcl
