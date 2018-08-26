@@ -22,6 +22,14 @@ proc page_current {p_pages} {
     return $pages(current)
 }
 
+proc page_numbers {p_pages} {
+    upvar $p_pages pages
+	
+	set tmplist [array names pages]
+	set idx [lsearch $tmplist "current"]
+	return [lsort [lreplace $tmplist $idx $idx]]
+}
+
 proc page_next {p_pages} {
     upvar $p_pages pages
 	
@@ -307,6 +315,29 @@ proc doodle {x y handle} {
      set fd [open $filename w]
      puts $fd $data
      close $fd
+     return	 
+ }
+ 
+  proc doodle'output'pdf {w filename} {
+     global g_pages_db
+     global g_id_list
+
+     doodle'update'page $w curr
+
+	 pdf4tcl::new mypdf -paper a4 -margin 15mm 
+	 foreach page [page_numbers g_pages_db] {
+	     undo_init g_id_list
+	     $w delete line
+	     doodle'load'page $w $page
+		 mypdf startPage
+		 mypdf canvas $w
+	 }
+     mypdf write -file $filename
+     mypdf destroy
+	 
+	 undo_init g_id_list
+	 $w delete line
+	 doodle'load'page $w [page_current g_pages_db]
      return	 
  }
  
